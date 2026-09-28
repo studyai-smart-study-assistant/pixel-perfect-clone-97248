@@ -14,13 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      family_device_pairs: {
+        Row: {
+          active: boolean
+          admin_device_id: string
+          created_at: string
+          id: string
+          user_device_id: string
+        }
+        Insert: {
+          active?: boolean
+          admin_device_id: string
+          created_at?: string
+          id?: string
+          user_device_id: string
+        }
+        Update: {
+          active?: boolean
+          admin_device_id?: string
+          created_at?: string
+          id?: string
+          user_device_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_device_pairs_admin_device_id_fkey"
+            columns: ["admin_device_id"]
+            isOneToOne: false
+            referencedRelation: "family_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_device_pairs_user_device_id_fkey"
+            columns: ["user_device_id"]
+            isOneToOne: false
+            referencedRelation: "family_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_devices: {
+        Row: {
+          camera_enabled: boolean
+          created_at: string
+          device_name: string
+          device_uuid: string
+          id: string
+          last_seen_at: string
+          microphone_enabled: boolean
+          owner_id: string
+          platform: string
+          profile_id: string | null
+          role: string
+        }
+        Insert: {
+          camera_enabled?: boolean
+          created_at?: string
+          device_name: string
+          device_uuid?: string
+          id?: string
+          last_seen_at?: string
+          microphone_enabled?: boolean
+          owner_id?: string
+          platform?: string
+          profile_id?: string | null
+          role: string
+        }
+        Update: {
+          camera_enabled?: boolean
+          created_at?: string
+          device_name?: string
+          device_uuid?: string
+          id?: string
+          last_seen_at?: string
+          microphone_enabled?: boolean
+          owner_id?: string
+          platform?: string
+          profile_id?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_devices_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "family_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_pairing_sessions: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          token_hash: string
+          user_device_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          token_hash: string
+          user_device_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          user_device_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_pairing_sessions_user_device_id_fkey"
+            columns: ["user_device_id"]
+            isOneToOne: false
+            referencedRelation: "family_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          id?: string
+          owner_id?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_family_pairing_session: {
+        Args: { _admin_device_id: string; _token_hash: string }
+        Returns: string
+      }
+      create_family_pairing_session: {
+        Args: { _token_hash: string; _user_device_id: string }
+        Returns: string
+      }
+      family_device_is_accessible: {
+        Args: { _device_id: string }
+        Returns: boolean
+      }
+      family_device_is_owned: { Args: { _device_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
