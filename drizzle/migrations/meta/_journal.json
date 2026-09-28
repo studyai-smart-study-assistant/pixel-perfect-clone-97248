@@ -15,6 +15,13 @@
       "when": 1790563022098,
       "tag": "0001_fix_family_profile_visibility_and_pair_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790564050885,
+      "tag": "0002_register_family_device_securely",
+      "breakpoints": true
     }
   ]
 }
