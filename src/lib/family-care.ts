@@ -40,7 +40,7 @@ export async function saveSetup(role: DeviceRole, deviceName: string, profileNam
 
   const { data: device, error: deviceError } = await supabase
     .from('family_devices')
-    .insert({ device_name: deviceName.trim(), role, profile_id: profile.id, platform: 'android' })
+    .insert({ owner_id: data.user.id, device_name: deviceName.trim(), role, profile_id: profile.id, platform: 'android' })
     .select('id, device_uuid')
     .single();
   if (deviceError) {
