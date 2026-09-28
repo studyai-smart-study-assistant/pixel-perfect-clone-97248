@@ -74,6 +74,16 @@ export async function loadFamilyDevices(adminDeviceId: string): Promise<FamilyDe
   }));
 }
 
+export async function loadOwnDevice(deviceId: string): Promise<FamilyDevice | null> {
+  const { data, error } = await supabase
+    .from('family_devices')
+    .select('id, device_uuid, device_name, role, platform, microphone_enabled, camera_enabled, last_seen_at, profile_id')
+    .eq('id', deviceId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { ...data, role: data.role as DeviceRole, label: data.device_name } : null;
+}
+
 export async function createPairingCode(deviceId: string) {
   const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
   const token = Array.from(tokenBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
