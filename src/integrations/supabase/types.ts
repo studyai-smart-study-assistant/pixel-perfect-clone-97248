@@ -177,6 +177,18 @@ export type Database = {
         Returns: boolean
       }
       family_device_is_owned: { Args: { _device_id: string }; Returns: boolean }
+      register_family_device: {
+        Args: {
+          _device_name: string
+          _platform?: string
+          _profile_id: string
+          _role: string
+        }
+        Returns: {
+          device_uuid: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

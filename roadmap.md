@@ -1,5 +1,6 @@
 - [x] Build the Family Care mobile-first app and explicit per-device Admin/User setup.
 - [x] Add secure Lovable Cloud profile, device, and single-use time-limited pairing foundation.
-- [ ] Add Capacitor Android source project with correct native boundaries and permission declarations.
+- [x] Add Capacitor Android source project with correct native boundaries and permission declarations.
 - [x] Add GitHub Actions workflow to build, verify, and upload a debug APK.
-- [ ] Build, validate first-run and Admin/User flows, and identify provider/native features that remain unconfigured.
+- [x] Export the app start page and sync the web app into Capacitor's Android assets.
+- [ ] Verify a Gradle APK build and Admin/User pairing on Android; local verification is blocked by the sandbox's missing Android SDK. Pairing still needs a second signed-in device; native audio/video capture and push notifications are not implemented/configured.
