@@ -26,6 +26,10 @@ jobs:
       - name: Build and verify web app shell
         run: |
           bun run build
+          if [ ! -s dist/client/index.html ] && [ -s .output/public/index.html ]; then
+            mkdir -p dist/client
+            cp -R .output/public/. dist/client/
+          fi
           test -s dist/client/index.html || { echo 'Expected dist/client/index.html after the web build'; exit 1; }
       - name: Sync Capacitor Android project
         run: npx cap sync android
