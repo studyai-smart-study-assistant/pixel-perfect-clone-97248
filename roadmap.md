@@ -3,5 +3,5 @@
 - [x] Add Capacitor Android source project with correct native boundaries and permission declarations.
 - [x] Add GitHub Actions workflow to build, verify, and upload a debug APK.
 - [x] Export the app start page and sync the web app into Capacitor's Android assets from `dist/client`.
-- [x] Verify the Android workflow checks the Vite `dist/client` web-shell output before syncing Capacitor assets.
+- [x] Make the Android workflow accept either observed web-build output and normalize it to `dist/client` before Capacitor sync.
 - [ ] Verify a Gradle APK build and Admin/User pairing on Android; local verification is blocked by the sandbox's missing Android SDK. Pairing still needs a second signed-in device; native audio/video capture and push notifications are not implemented/configured.
