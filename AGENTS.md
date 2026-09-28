@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Project decisions
-- Family Care is a single Capacitor Android app; device role is explicitly selected and belongs to the installation, while user accounts and profiles remain separate. This prevents global or signup-order role assignment.
-- Sensitive family operations use Lovable Cloud row security and server-validated pairing RPCs; browser state is never the authorization source. This keeps pairing and device access checks server-side.
-- Native Android camera/microphone functionality must use explicit Capacitor/native APIs and permissions; web preview behavior must not imply background capture is available. Long-running capture and privacy-sensitive media are platform-owned.
-- Android APK CI builds from the committed Gradle wrapper/project and uploads a verified APK. A clean checkout must not rely on Android Studio.
+- Family Care is one Capacitor Android app; a person explicitly chooses each device's Admin/User role, not an account role or signup order, to avoid a global first-admin privilege.
+- Each account owns its profiles and registered devices; the database validates pairing codes and enforces access so browser-stored identity is never trusted as authorization.
+- Device sharing preferences are not proof of capture permission; microphone/camera use must be user-visible, natively permissioned, and never claimed as working before native capture and server authorization exist.
+- Android APK automation must build the committed Gradle project from a clean checkout and verify the artifact before upload, so no Android Studio installation is required.
