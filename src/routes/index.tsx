@@ -7,7 +7,7 @@ import { Camera, Heart, KeyRound, LogOut, Mic, MonitorSmartphone, Plus, QrCode, 
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
-import { createPairingCode, getInstallation, loadFamilyDevices, pairDevice, removePairing, saveSetup, setCapability, type DeviceRole, type FamilyDevice, type Installation } from '@/lib/family-care';
+import { createPairingCode, getInstallation, loadFamilyDevices, loadOwnDevice, pairDevice, removePairing, saveSetup, setCapability, type DeviceRole, type FamilyDevice, type Installation } from '@/lib/family-care';
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -18,6 +18,11 @@ export const Route = createFileRoute('/')({
       { property: 'og:description', content: 'A private family-care companion for trusted devices and people.' },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary' },
+    ],
+    links: [
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap' },
     ],
   }),
   component: FamilyCareApp,
@@ -45,9 +50,13 @@ function FamilyCareApp() {
   const [selectedDevice, setSelectedDevice] = useState<FamilyDevice | null>(null);
 
   const refreshDevices = useCallback(async (current: Installation | null) => {
-    if (current?.role !== 'admin') return;
+    if (!current) return;
     try {
-      setDevices(await loadFamilyDevices(current.id));
+      if (current.role === 'admin') setDevices(await loadFamilyDevices(current.id));
+      else {
+        const ownDevice = await loadOwnDevice(current.id);
+        setDevices(ownDevice ? [ownDevice] : []);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load paired devices.');
     }
@@ -211,7 +220,7 @@ function FamilyCareApp() {
   return <main className="family-shell dashboard-shell"><header className="topbar"><a className="brand" href="#"><span className="brand-mark"><Heart size={18} fill="currentColor" /></span><span>family care</span></a><div className="topbar-user"><span className={`role-pill ${installation.role}`}><span />{installation.role === 'admin' ? 'ADMIN' : 'USER'} DEVICE</span><button className="avatar-button" title={userEmail}>{(installation.profileName[0] ?? 'F').toUpperCase()}</button><button className="icon-action" title="Sign out" onClick={signOut}><LogOut size={17} /></button></div></header>
     <div className="dashboard-content"><div className="dash-greeting"><div><span className="eyebrow"><span className="status-dot" /> YOUR PRIVATE FAMILY CIRCLE</span><h1>{isUser ? <>Hello, <em>{installation.profileName}.</em></> : <>Good to have you,<br /><em>{installation.profileName}.</em></>}</h1><p>{isUser ? 'Your device is ready to stay connected with your family.' : 'Your family, together in one quiet place.'}</p></div><span className="greeting-heart"><Heart size={27} /></span></div>
       {error && <div className="form-message is-error">{error}<button onClick={() => setError('')}><X size={15} /></button></div>}{notice && <div className="form-message">{notice}<button onClick={() => setNotice('')}><X size={15} /></button></div>}
-      {isUser ? <section className="user-home"><div className="section-head"><div><span className="eyebrow">DEVICE PAIRING</span><h2>Stay in their circle.</h2></div><span className="section-symbol"><QrCode size={20} /></span></div><p className="section-copy">Show your private QR code to an Admin device you trust. It expires after five minutes and works once.</p>
+        <div className="section-head"><div><span className="eyebrow">DEVICE PAIRING</span><h2>Stay in their circle.</h2></div><span className="section-symbol"><QrCode size={20} /></span></div><p className="section-copy">Show your private QR code to an Admin device you trust. It expires after five minutes and works once.</p>
         {pairCode && remaining > 0 ? <div className="qr-code-frame"><QRCodeSVG value={pairCode.token} size={210} level="M" bgColor="transparent" fgColor="currentColor" /><div className="qr-expiry"><span className="status-dot" /> Expires in <strong>{expiryLabel}</strong></div></div> : <div className="qr-placeholder"><div className="qr-placeholder-inner"><QrCode size={44} strokeWidth={1.3} /></div><span>Your code stays private until you create it</span></div>}
         <Button className="primary-action" disabled={busy} onClick={newPairCode}>{pairCode ? <RefreshCw size={17} /> : <QrCode size={17} />}{busy ? 'Creating code…' : pairCode ? 'Create a new code' : 'Create pairing code'}</Button><div className="privacy-line"><ShieldCheck size={15} /> A new code replaces any previous one</div>
         <section className="device-settings"><div className="section-head small"><div><span className="eyebrow">DEVICE SETTINGS</span><h2>Your sharing preferences</h2></div></div><CapabilityToggle icon={<Mic size={17} />} title="Microphone" description="Allow your family to hear you" enabled={devices[0]?.microphone_enabled ?? false} onChange={(value) => void changeCapability(installation.id, 'microphone_enabled', value)} /><CapabilityToggle icon={<Camera size={17} />} title="Camera" description="Allow your family to see you" enabled={devices[0]?.camera_enabled ?? false} onChange={(value) => void changeCapability(installation.id, 'camera_enabled', value)} /><p className="media-note">These controls record your sharing preference. Live audio and video calling are not available yet.</p></section>
