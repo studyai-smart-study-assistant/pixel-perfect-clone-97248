@@ -15,6 +15,11 @@
     "rolldown": "1.2.1"
   },
   "dependencies": {
+    "@capacitor-community/barcode-scanner": "^4",
+    "@capacitor/android": "^7",
+    "@capacitor/camera": "^7",
+    "@capacitor/cli": "^7",
+    "@capacitor/core": "^7",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -56,6 +61,7 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
