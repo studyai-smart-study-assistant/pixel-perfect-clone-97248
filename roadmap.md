@@ -1,5 +1,5 @@
-- [ ] Build the Family Care mobile-first app and explicit per-device Admin/User setup.
+- [x] Build the Family Care mobile-first app and explicit per-device Admin/User setup.
+- [x] Add secure Lovable Cloud profile, device, and single-use time-limited pairing foundation.
 - [ ] Add Capacitor Android source project with correct native boundaries and permission declarations.
-- [ ] Add GitHub Actions workflow to build, verify, and upload a debug APK.
-- [ ] Enable Lovable Cloud before implementing persistent auth, pairing, media, and authorization.
-- [ ] Validate preview flows and build; identify provider/native capabilities not configured or end-to-end tested.
+- [x] Add GitHub Actions workflow to build, verify, and upload a debug APK.
+- [ ] Build, validate first-run and Admin/User flows, and identify provider/native features that remain unconfigured.
