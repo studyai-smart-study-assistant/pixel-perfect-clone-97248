@@ -70,6 +70,7 @@ export async function loadFamilyDevices(adminDeviceId: string): Promise<FamilyDe
   if (error) throw error;
   return (data ?? []).map((row) => ({
     ...row,
+    role: row.role as DeviceRole,
     label: row.family_profiles?.display_name ?? row.device_name,
   }));
 }
@@ -109,7 +110,10 @@ export async function pairDevice(adminDeviceId: string, token: string) {
 }
 
 export async function setCapability(deviceId: string, capability: 'microphone_enabled' | 'camera_enabled', enabled: boolean) {
-  const { error } = await supabase.from('family_devices').update({ [capability]: enabled }).eq('id', deviceId);
+  const changes = capability === 'microphone_enabled'
+    ? { microphone_enabled: enabled }
+    : { camera_enabled: enabled };
+  const { error } = await supabase.from('family_devices').update(changes).eq('id', deviceId);
   if (error) throw error;
 }
 
