@@ -23,8 +23,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install --frozen-lockfile
-      - name: Build web app
-        run: bun run build
+      - name: Build and verify web app shell
+        run: |
+          bun run build
+          test -s dist/client/index.html || { echo 'Expected dist/client/index.html after the web build'; exit 1; }
       - name: Sync Capacitor Android project
         run: npx cap sync android
       - name: Set up Java
