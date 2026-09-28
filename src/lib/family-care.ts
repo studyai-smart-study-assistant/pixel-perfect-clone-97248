@@ -38,14 +38,20 @@ export async function saveSetup(role: DeviceRole, deviceName: string, profileNam
     .single();
   if (profileError) throw profileError;
 
-  const { data: device, error: deviceError } = await supabase
-    .from('family_devices')
-    .insert({ owner_id: data.user.id, device_name: deviceName.trim(), role, profile_id: profile.id, platform: 'android' })
-    .select('id, device_uuid')
-    .single();
+  const { data: registeredDevices, error: deviceError } = await supabase.rpc('register_family_device', {
+    _profile_id: profile.id,
+    _device_name: deviceName.trim(),
+    _role: role,
+    _platform: 'android',
+  });
   if (deviceError) {
     await supabase.from('family_profiles').delete().eq('id', profile.id);
     throw deviceError;
+  }
+  const device = registeredDevices?.[0];
+  if (!device) {
+    await supabase.from('family_profiles').delete().eq('id', profile.id);
+    throw new Error('Device registration did not return a saved device.');
   }
 
   const installation = { id: device.id, role, deviceName: deviceName.trim(), profileName: profileName.trim() };
