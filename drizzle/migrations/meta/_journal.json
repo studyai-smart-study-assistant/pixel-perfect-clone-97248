@@ -8,6 +8,13 @@
       "when": 1790562499400,
       "tag": "0000_family_care_device_pairing",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790563022098,
+      "tag": "0001_fix_family_profile_visibility_and_pair_lists",
+      "breakpoints": true
     }
   ]
 }
