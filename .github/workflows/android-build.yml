@@ -39,9 +39,16 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Install Android SDK packages
-        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+        # ubuntu-latest ships the Android SDK command-line tools preinstalled;
+        # android-actions/setup-android@v3 is NOT used because it runs
+        # `sdkmanager tools`, a package that no longer exists in the SDK
+        # repository ("Failed to find package 'tools'").
+        run: |
+          SDKMANAGER="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMANAGER" ] || SDKMANAGER="$(command -v sdkmanager)"
+          "$SDKMANAGER" --version
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build debug APK
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
