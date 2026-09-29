@@ -15,3 +15,4 @@
 - Device sharing preferences are not proof of capture permission; microphone/camera use must be user-visible, natively permissioned, and never claimed as working before native capture and server authorization exist.
 - Android APK automation must build the committed Gradle project from a clean checkout and verify the artifact before upload, so no Android Studio installation is required.
 - Export the TanStack Start app shell to `dist/client/index.html` during builds so Capacitor can package the same app for native Android; keep server behavior in the normal web deployment.
+- Android Google sign-in opens the hosted Lovable OAuth broker in the system browser and returns tokens through the `familycare://oauth-callback` deep link; validate one-time OAuth state before creating a session, while web sign-in stays on the hosted page flow.

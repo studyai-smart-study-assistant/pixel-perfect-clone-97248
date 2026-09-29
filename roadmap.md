@@ -4,4 +4,5 @@
 - [x] Add GitHub Actions workflow to build, verify, and upload a debug APK.
 - [x] Export the app start page and sync the web app into Capacitor's Android assets from `dist/client`.
 - [x] Make the Android workflow accept either observed web-build output and normalize it to `dist/client` before Capacitor sync.
+- [x] Route Android Google sign-in through the hosted auth broker and return to the APK with a validated one-time deep link.
 - [ ] Verify a Gradle APK build and Admin/User pairing on Android; local verification is blocked by the sandbox's missing Android SDK. Pairing still needs a second signed-in device; native audio/video capture and push notifications are not implemented/configured.

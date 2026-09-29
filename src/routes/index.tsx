@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { QRCodeSVG } from 'qrcode.react';
 import { Camera, Heart, KeyRound, LogOut, Mic, MonitorSmartphone, Plus, QrCode, Radio, RefreshCw, ScanLine, ShieldCheck, Smartphone, UserRound, Video, Wifi, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,9 @@ export const Route = createFileRoute('/')({
 });
 
 type PairCode = { token: string; expiresAt: string };
+const nativeOAuthStateKey = 'family-care-google-oauth-state';
+const nativeOAuthRedirect = 'familycare://oauth-callback';
+const hostedOAuthStart = 'https://pixel-perfect-clone-97248.lovable.app/~oauth/initiate';
 
 function FamilyCareApp() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -88,6 +93,64 @@ function FamilyCareApp() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let active = true;
+    const completeSignIn = async (rawUrl: string) => {
+      let callback: URL;
+      try {
+        callback = new URL(rawUrl);
+      } catch {
+        return;
+      }
+      if (callback.protocol !== 'familycare:' || callback.hostname !== 'oauth-callback') return;
+
+      const values = new URLSearchParams(callback.search);
+      const hashValues = new URLSearchParams(callback.hash.replace(/^#/, ''));
+      hashValues.forEach((value, key) => values.set(key, value));
+      const expectedState = window.localStorage.getItem(nativeOAuthStateKey);
+      if (!expectedState || values.get('state') !== expectedState) {
+        if (active) { setBusy(false); setError('Google sign-in could not be verified. Please try again.'); }
+        return;
+      }
+      window.localStorage.removeItem(nativeOAuthStateKey);
+      const providerError = values.get('error_description') ?? values.get('error');
+      if (providerError) {
+        if (active) { setBusy(false); setError(providerError); }
+        return;
+      }
+      const accessToken = values.get('access_token');
+      const refreshToken = values.get('refresh_token');
+      if (!accessToken || !refreshToken) {
+        if (active) { setBusy(false); setError('Google sign-in did not return a session. Please try again.'); }
+        return;
+      }
+      const { data, error: sessionError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      if (sessionError) {
+        if (active) { setBusy(false); setError(sessionError.message); }
+        return;
+      }
+      if (active) {
+        setUserEmail(data.user?.email ?? null);
+        setInstallation(getInstallation());
+        setError('');
+        setBusy(false);
+      }
+    };
+
+    const listener = App.addListener('appUrlOpen', ({ url }) => {
+      void Browser.close().catch(() => undefined);
+      void completeSignIn(url);
+    });
+    void App.getLaunchUrl().then((launch) => {
+      if (active && launch?.url) void completeSignIn(launch.url);
+    }).catch(() => undefined);
+    return () => {
+      active = false;
+      void listener.then((handle) => handle.remove());
+    };
+  }, []);
+
   useEffect(() => { void refreshDevices(installation); }, [installation, refreshDevices]);
   useEffect(() => {
     if (!pairCode) return;
@@ -128,13 +191,24 @@ function FamilyCareApp() {
   async function googleSignIn() {
     setBusy(true); setError('');
     try {
+      if (Capacitor.isNativePlatform()) {
+        const stateBytes = crypto.getRandomValues(new Uint8Array(24));
+        const state = Array.from(stateBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+        window.localStorage.setItem(nativeOAuthStateKey, state);
+        const authorizeUrl = new URL(hostedOAuthStart);
+        authorizeUrl.searchParams.set('provider', 'google');
+        authorizeUrl.searchParams.set('redirect_uri', nativeOAuthRedirect);
+        authorizeUrl.searchParams.set('state', state);
+        await Browser.open({ url: authorizeUrl.toString() });
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin });
       if (result.error) throw result.error;
       if (result.redirected) return;
       const { data } = await supabase.auth.getUser();
       setUserEmail(data.user?.email ?? null);
       setInstallation(getInstallation());
-    } catch (e) { setError(e instanceof Error ? e.message : 'Google sign-in failed.'); }
+    } catch (e) { window.localStorage.removeItem(nativeOAuthStateKey); setError(e instanceof Error ? e.message : 'Google sign-in failed.'); }
     finally { setBusy(false); }
   }
 
