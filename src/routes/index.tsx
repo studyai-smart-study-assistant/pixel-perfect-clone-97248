@@ -96,7 +96,9 @@ function FamilyCareApp() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
     let active = true;
+    let callbackHandled = false;
     const completeSignIn = async (rawUrl: string) => {
+      if (callbackHandled) return;
       let callback: URL;
       try {
         callback = new URL(rawUrl);
@@ -109,10 +111,12 @@ function FamilyCareApp() {
       const hashValues = new URLSearchParams(callback.hash.replace(/^#/, ''));
       hashValues.forEach((value, key) => values.set(key, value));
       const expectedState = window.localStorage.getItem(nativeOAuthStateKey);
-      if (!expectedState || values.get('state') !== expectedState) {
+      if (!expectedState) return;
+      if (values.get('state') !== expectedState) {
         if (active) { setBusy(false); setError('Google sign-in could not be verified. Please try again.'); }
         return;
       }
+      callbackHandled = true;
       window.localStorage.removeItem(nativeOAuthStateKey);
       const providerError = values.get('error_description') ?? values.get('error');
       if (providerError) {
@@ -142,12 +146,16 @@ function FamilyCareApp() {
       void Browser.close().catch(() => undefined);
       void completeSignIn(url);
     });
+    const browserListener = Browser.addListener('browserFinished', () => {
+      if (window.localStorage.getItem(nativeOAuthStateKey) && active) setBusy(false);
+    });
     void App.getLaunchUrl().then((launch) => {
       if (active && launch?.url) void completeSignIn(launch.url);
     }).catch(() => undefined);
     return () => {
       active = false;
       void listener.then((handle) => handle.remove());
+      void browserListener.then((handle) => handle.remove());
     };
   }, []);
 
